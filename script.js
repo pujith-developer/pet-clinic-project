@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 
-    // Menu link click pannina close aagum
+    // Close mobile menu after clicking a link
 
     const links = document.querySelectorAll(".nav-links a");
 
@@ -44,6 +44,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const alertText = document.getElementById("alertText");
     const closeAlert = document.getElementById("closeAlert");
 
+    let alertTimer;
+
     function showAlert(message, type) {
 
         alertText.textContent = message;
@@ -51,7 +53,9 @@ document.addEventListener("DOMContentLoaded", function () {
         topAlert.className = "top-alert " + type;
         topAlert.classList.add("show");
 
-        setTimeout(function () {
+        clearTimeout(alertTimer);
+
+        alertTimer = setTimeout(function () {
             topAlert.classList.remove("show");
         }, 4000);
 
@@ -59,6 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     closeAlert.addEventListener("click", function () {
         topAlert.classList.remove("show");
+        clearTimeout(alertTimer);
     });
 
 
@@ -81,15 +86,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 4. PHONE NUMBER VALIDATION
 
-    const phone = document.getElementById("phone");
+    const phoneInput = document.getElementById("phone");
     const boardingPhone = document.getElementById("boardingPhone");
 
-    phone.addEventListener("input", function () {
-        phone.value = phone.value.replace(/\D/g, "").slice(0, 10);
+    phoneInput.addEventListener("input", function () {
+
+        phoneInput.value = phoneInput.value.replace(/\D/g, "").slice(0, 10);
+
     });
 
     boardingPhone.addEventListener("input", function () {
+
         boardingPhone.value = boardingPhone.value.replace(/\D/g, "").slice(0, 10);
+
     });
 
 
@@ -136,7 +145,6 @@ document.addEventListener("DOMContentLoaded", function () {
         "Other"
     ];
 
-
     function setupBreedDropdown(petId, breedId) {
 
         const petSelect = document.getElementById(petId);
@@ -150,20 +158,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (petSelect.value === "Dog") {
                 breeds = dogBreeds;
-            }
-            else if (petSelect.value === "Cat") {
+            } else if (petSelect.value === "Cat") {
                 breeds = catBreeds;
             }
 
-            // Default option
-
             const firstOption = document.createElement("option");
+
             firstOption.value = "";
-            firstOption.textContent = "Select pet breed";
+
+            firstOption.textContent = breeds.length > 0
+                ? "Select pet breed"
+                : "Select pet type first";
 
             breedSelect.appendChild(firstOption);
-
-            // Breed options
 
             breeds.forEach(function (breed) {
 
@@ -178,20 +185,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             breedSelect.disabled = breeds.length === 0;
 
-            if (breeds.length === 0) {
-                firstOption.textContent = "Select pet type first";
-            }
-
         });
 
     }
 
-    // Clinic breed dropdown
-
     setupBreedDropdown("pet", "breed");
-
-    // Boarding breed dropdown
-
     setupBreedDropdown("boardingPet", "boardingBreed");
 
 
@@ -204,15 +202,12 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault();
 
         const name = document.getElementById("name").value.trim();
-        const phone = document.getElementById("phone").value.trim();
+        const phone = phoneInput.value.trim();
         const email = document.getElementById("email").value.trim();
         const pet = document.getElementById("pet").value;
         const breed = document.getElementById("breed").value;
         const service = document.getElementById("service").value;
         const date = document.getElementById("date").value;
-
-
-        // Name check
 
         if (name === "" || !validName(name)) {
             showAlert("Please enter a valid name.", "error");
@@ -220,15 +215,11 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Phone check
-
         if (!validPhone(phone)) {
             showAlert("Enter a valid 10-digit mobile number.", "error");
-            document.getElementById("phone").focus();
+            phoneInput.focus();
             return;
         }
-
-        // Email check
 
         if (!validEmail(email)) {
             showAlert("Enter a valid email address.", "error");
@@ -236,15 +227,11 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Pet type check
-
         if (pet === "") {
             showAlert("Please select your pet type.", "error");
             document.getElementById("pet").focus();
             return;
         }
-
-        // Pet breed check
 
         if (breed === "") {
             showAlert("Please select your pet breed.", "error");
@@ -252,23 +239,17 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Service check
-
         if (service === "") {
             showAlert("Please select a service.", "error");
             document.getElementById("service").focus();
             return;
         }
 
-        // Date check
-
         if (date === "" || date < localToday) {
             showAlert("Please select a valid appointment date.", "error");
             document.getElementById("date").focus();
             return;
         }
-
-        // Success
 
         showAlert("Appointment request submitted successfully!", "success");
 
@@ -290,11 +271,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const checkOut = document.getElementById("checkOut");
 
 
-    // Check-out date should be after check-in date
+    // CHECK-OUT DATE
 
     checkIn.addEventListener("change", function () {
 
-        checkOut.min = checkIn.value;
+        checkOut.min = checkIn.value || localToday;
 
         if (checkOut.value && checkOut.value <= checkIn.value) {
             checkOut.value = "";
@@ -303,19 +284,18 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
+    // BOARDING FORM SUBMIT
+
     boardingForm.addEventListener("submit", function (event) {
 
         event.preventDefault();
 
         const name = document.getElementById("boardingName").value.trim();
-        const phone = document.getElementById("boardingPhone").value.trim();
+        const phone = boardingPhone.value.trim();
         const email = document.getElementById("boardingEmail").value.trim();
         const pet = document.getElementById("boardingPet").value;
         const breed = document.getElementById("boardingBreed").value;
         const petName = document.getElementById("petName").value.trim();
-
-
-        // Owner name check
 
         if (name === "" || !validName(name)) {
             showAlert("Please enter a valid owner name.", "error");
@@ -323,15 +303,11 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Phone check
-
         if (!validPhone(phone)) {
             showAlert("Enter a valid 10-digit mobile number.", "error");
-            document.getElementById("boardingPhone").focus();
+            boardingPhone.focus();
             return;
         }
-
-        // Email check
 
         if (!validEmail(email)) {
             showAlert("Enter a valid email address.", "error");
@@ -339,15 +315,11 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Pet type check
-
         if (pet === "") {
             showAlert("Please select your pet type.", "error");
             document.getElementById("boardingPet").focus();
             return;
         }
-
-        // Pet breed check
 
         if (breed === "") {
             showAlert("Please select your pet breed.", "error");
@@ -355,23 +327,17 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Pet name check
-
         if (petName === "") {
             showAlert("Please enter your pet name.", "error");
             document.getElementById("petName").focus();
             return;
         }
 
-        // Check-in date
-
         if (checkIn.value === "" || checkIn.value < localToday) {
             showAlert("Please select a valid check-in date.", "error");
             checkIn.focus();
             return;
         }
-
-        // Check-out date
 
         if (checkOut.value === "") {
             showAlert("Please select check-out date.", "error");
@@ -384,8 +350,6 @@ document.addEventListener("DOMContentLoaded", function () {
             checkOut.focus();
             return;
         }
-
-        // Success
 
         showAlert("Boarding reservation request submitted successfully!", "success");
 
